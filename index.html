@@ -9,18 +9,18 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 tailwind.config = {
-  theme: { extend: { colors: { primary: '#F97316', 'primary-dark': '#EA6C10' } } }
+  theme: { extend: { colors: { primary: '#d7a64c', 'primary-dark': '#c4913a' } } }
 }
 </script>
 <style>
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAF7F4; max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
 .hidden { display: none !important; }
-.gradient-header { background: linear-gradient(145deg, #1A1A1A 0%, #3D1A0A 100%); }
+.gradient-header { background: #182f57; }
 
 /* ── Login page ── */
 .login-hero { padding: 56px 24px 40px; text-align: center; }
-.login-icon { width: 64px; height: 64px; background: #F97316; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 20px rgba(249,115,22,0.4); margin: 0 auto 16px; }
+.login-icon { width: 64px; height: 64px; background: #d7a64c; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 20px rgba(249,115,22,0.4); margin: 0 auto 16px; }
 .login-title { font-size: 26px; font-weight: 800; color: white; }
 .login-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 4px; }
 .login-card { background: white; border-radius: 24px 24px 0 0; flex: 1; padding: 28px 24px 40px; box-shadow: 0 -4px 24px rgba(0,0,0,0.08); }
@@ -31,24 +31,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .card-white { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
 
 /* ── Buttons ── */
-.btn-primary { background: #F97316; color: white; border-radius: 14px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-.btn-primary:active { background: #EA6C10; transform: scale(0.98); }
-.btn-secondary { background: #fff; color: #F97316; border: 1.5px solid #F97316; border-radius: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn-primary { background: #d7a64c; color: white; border-radius: 14px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn-primary:active { background: #c4913a; transform: scale(0.98); }
+.btn-secondary { background: #fff; color: #d7a64c; border: 1.5px solid #d7a64c; border-radius: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 
 /* ── Quiz engine ── */
 .option-btn { border: 2px solid #E5E7EB; border-radius: 12px; background: #fff; transition: all 0.15s; text-align: left; width: 100%; cursor: pointer; }
-.option-btn.selected { border-color: #F97316; background: #FFF7ED; }
+.option-btn.selected { border-color: #d7a64c; background: #FFF7ED; }
 .option-btn.correct  { border-color: #22C55E; background: #F0FDF4; }
 .option-btn.wrong    { border-color: #EF4444; background: #FEF2F2; }
 .q-dot { width: 34px; height: 34px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.q-dot.answered { background: #F97316; color: white; }
-.q-dot.current  { background: #1A1A1A; color: white; }
+.q-dot.answered { background: #d7a64c; color: white; }
+.q-dot.current  { background: #182f57; color: white; }
 .q-dot.empty    { background: #E5E7EB; color: #9CA3AF; }
 
 /* ── Bottom nav ── */
 .bottom-nav { box-shadow: 0 -2px 16px rgba(0,0,0,0.10); background: white; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; z-index: 40; }
 .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; padding: 8px 4px; cursor: pointer; color: #9CA3AF; font-size: 11px; background: none; border: none; }
-.bottom-nav-item.active { color: #F97316; }
+.bottom-nav-item.active { color: #d7a64c; }
 
 /* ── Animations ── */
 .slide-up { animation: slideUp 0.25s ease; }
@@ -66,14 +66,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 /* ── Form inputs ── */
 .input-field { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 12px; padding: 11px 14px; font-size: 15px; outline: none; background: white; font-family: inherit; }
-.input-field:focus { border-color: #F97316; }
+.input-field:focus { border-color: #d7a64c; }
 label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px; display: block; }
 select.input-field { appearance: none; -webkit-appearance: none; }
 textarea.input-field { resize: vertical; }
 
 /* ── Misc ── */
-.tag { display: inline-flex; align-items: center; background: #FFF7ED; color: #F97316; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
-.score-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid #F97316; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; box-shadow: 0 4px 24px rgba(249,115,22,0.2); }
+.tag { display: inline-flex; align-items: center; background: #FFF7ED; color: #d7a64c; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+.score-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid #d7a64c; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; box-shadow: 0 4px 24px rgba(249,115,22,0.2); }
 ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 a { text-decoration: none; color: inherit; }
 </style>
@@ -83,7 +83,7 @@ a { text-decoration: none; color: inherit; }
 <!-- LOADING -->
 <div id="loadingOverlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:50;display:none;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:20px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
-    <div style="width:40px;height:40px;border:4px solid #F97316;border-top-color:transparent;border-radius:50%;" class="spin"></div>
+    <div style="width:40px;height:40px;border:4px solid #d7a64c;border-top-color:transparent;border-radius:50%;" class="spin"></div>
     <p style="font-size:13px;color:#6B7280;" id="loadingText">Memuat...</p>
   </div>
 </div>
@@ -95,10 +95,25 @@ a { text-decoration: none; color: inherit; }
 
 <!-- ══════════ LOGIN ══════════ -->
 <div id="viewLogin" style="min-height:100vh;display:flex;flex-direction:column;">
-  <div class="gradient-header login-hero">
-    <div class="login-icon">🎯</div>
-    <h1 class="login-title">Tryout Online</h1>
-    <p class="login-sub">Platform CBT Kepolisian</p>
+  <!-- Hero Banner -->
+  <div style="background:#182f57;position:relative;overflow:hidden;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px 0;">
+    <!-- Logo + Brand -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="width:36px;height:36px;background:#d7a64c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🎯</div>
+      <span style="font-size:14px;font-weight:800;color:#d7a64c;letter-spacing:0.08em;">CASISPOLRIID</span>
+    </div>
+    <!-- Headline -->
+    <p style="font-size:15px;font-weight:700;color:white;text-align:center;line-height:1.5;max-width:260px;margin-bottom:0;z-index:2;position:relative;">
+      Siap Menemani dan Membimbing<br>
+      <span style="color:#d7a64c;">Casisjuara</span> Menggapai Mimpi<br>Menjadi Polisi
+    </p>
+    <!-- Two Officers -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:360px;margin-top:8px;">
+      <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/153.png"
+           style="height:130px;object-fit:contain;object-position:bottom;" alt="polisi pria">
+      <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/154.png"
+           style="height:130px;object-fit:contain;object-position:bottom;" alt="polisi wanita">
+    </div>
   </div>
   <div class="login-card slide-up" style="flex:1;">
     <h2>Masuk ke Akun</h2>
@@ -118,7 +133,7 @@ a { text-decoration: none; color: inherit; }
     </form>
     <div style="text-align:center;margin-top:20px;">
       <span style="font-size:13px;color:#6B7280;">Belum punya akun? </span>
-      <button onclick="showView('viewRegister')" style="font-size:13px;font-weight:700;color:#F97316;background:none;border:none;cursor:pointer;text-decoration:underline;">Daftar di sini</button>
+      <button onclick="showView('viewRegister')" style="font-size:13px;font-weight:700;color:#d7a64c;background:none;border:none;cursor:pointer;text-decoration:underline;">Daftar di sini</button>
     </div>
   </div>
 </div>
@@ -134,7 +149,7 @@ a { text-decoration: none; color: inherit; }
   </div>
   <div class="login-card slide-up" style="flex:1;border-radius:24px 24px 0 0;">
     <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:12px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:#92400E;font-weight:600;">
-      ⏳ Setelah mendaftar, akun Anda akan aktif setelah disetujui admin.
+      ⏳ Setelah mendaftar, akun casisjuara akan aktif setelah disetujui admin.
     </div>
     <form id="registerForm" onsubmit="handleRegister(event)">
       <div style="margin-bottom:14px;">
@@ -148,6 +163,14 @@ a { text-decoration: none; color: inherit; }
       <div style="margin-bottom:14px;">
         <label>No. HP / WhatsApp</label>
         <input id="regPhone" type="tel" class="input-field" placeholder="08xxxxxxxxxx" required>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label>Polda</label>
+        <input id="regPolda" type="text" class="input-field" placeholder="Contoh: Polda Jawa Barat">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label>Polres</label>
+        <input id="regPolres" type="text" class="input-field" placeholder="Contoh: Polres Bandung">
       </div>
       <div style="margin-bottom:14px;">
         <label>Password</label>
@@ -167,7 +190,7 @@ a { text-decoration: none; color: inherit; }
     </form>
     <div style="text-align:center;margin-top:16px;">
       <span style="font-size:13px;color:#6B7280;">Sudah punya akun? </span>
-      <button onclick="showView('viewLogin')" style="font-size:13px;font-weight:700;color:#F97316;background:none;border:none;cursor:pointer;text-decoration:underline;">Masuk</button>
+      <button onclick="showView('viewLogin')" style="font-size:13px;font-weight:700;color:#d7a64c;background:none;border:none;cursor:pointer;text-decoration:underline;">Masuk</button>
     </div>
   </div>
 </div>
@@ -631,7 +654,7 @@ let sb; // pakai let agar tidak stuck di temporal dead zone jika init gagal
 
 function initSupabase() {
   if (typeof window.supabase === 'undefined') {
-    showFatalError('Library Supabase gagal dimuat.<br>Pastikan ada koneksi internet, lalu <a href="javascript:location.reload()" style="color:#F97316;text-decoration:underline;">refresh halaman ini</a>.');
+    showFatalError('Library Supabase gagal dimuat.<br>Pastikan ada koneksi internet, lalu <a href="javascript:location.reload()" style="color:#d7a64c;text-decoration:underline;">refresh halaman ini</a>.');
     return false;
   }
   try {
@@ -656,7 +679,7 @@ function showFatalError(msg) {
 
 // ── Style subjek ────────────────────────────────────────
 const SUBJECT_STYLE = {
-  '1': { bg: 'linear-gradient(135deg,#F97316,#EA580C)', icon: '🧠' },
+  '1': { bg: 'linear-gradient(135deg,#d7a64c,#EA580C)', icon: '🧠' },
   '2': { bg: 'linear-gradient(135deg,#3B82F6,#1D4ED8)', icon: '💭' },
   '3': { bg: 'linear-gradient(135deg,#22C55E,#15803D)', icon: '📚' },
   '4': { bg: 'linear-gradient(135deg,#A855F7,#7E22CE)', icon: '🏛️' },
@@ -812,6 +835,8 @@ async function handleRegister(e) {
   const nama     = document.getElementById('regNama').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
   const phone    = document.getElementById('regPhone').value.trim();
+  const polda    = document.getElementById('regPolda').value.trim();
+  const polres   = document.getElementById('regPolres').value.trim();
   const pass     = document.getElementById('regPassword').value;
   const passConf = document.getElementById('regPasswordConfirm').value;
 
@@ -826,7 +851,8 @@ async function handleRegister(e) {
 
   const res = await rpc('register_user', {
     p_nama: nama, p_email: email, p_phone: phone,
-    p_username: username, p_password: pass
+    p_username: username, p_password: pass,
+    p_polda: polda, p_polres: polres
   });
 
   btn.disabled = false; btn.textContent = 'Daftar Sekarang';
@@ -1376,7 +1402,11 @@ async function renderAdminUsers(content) {
       <p class="font-semibold text-gray-700">${users.length} User</p>
       <button onclick="openUserModal()" class="btn-primary px-4 py-2 text-xs">+ Tambah</button>
     </div>
-    <div class="space-y-2">
+    <div style="position:relative;margin-bottom:12px;">
+      <input type="text" id="userSearch" class="input-field" placeholder="🔍 Cari nama atau username..."
+        oninput="filterUsers(this.value)" style="padding-left:14px;">
+    </div>
+    <div class="space-y-2" id="userList">
       ${users.map(u => `
         <div class="bg-white rounded-xl p-3.5 card-shadow flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
@@ -1394,6 +1424,35 @@ async function renderAdminUsers(content) {
           </div>
         </div>`).join('')}
     </div>`;
+
+  // Store user data for search
+  window._adminUsers = users;
+}
+
+function filterUsers(q) {
+  const list = document.getElementById('userList');
+  if (!list || !window._adminUsers) return;
+  const term = q.toLowerCase();
+  const filtered = window._adminUsers.filter(u =>
+    u.nama.toLowerCase().includes(term) || u.username.toLowerCase().includes(term)
+  );
+  if (!filtered.length) { list.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">Tidak ditemukan</p>'; return; }
+  list.innerHTML = filtered.map(u => `
+    <div class="bg-white rounded-xl p-3.5 card-shadow flex items-center justify-between gap-2">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-sm text-gray-800">${u.nama}</p>
+        <p class="text-xs text-gray-400">@${u.username}</p>
+        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+          <span class="tag text-xs">${u.polda || '—'}</span>
+          <span class="tag ${u.status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'} text-xs">${u.status}</span>
+          ${u.role === 'admin' ? '<span class="tag bg-purple-100 text-purple-700 text-xs">Admin</span>' : ''}
+        </div>
+      </div>
+      <div class="flex gap-1.5">
+        <button onclick='editUser(${JSON.stringify(u)})' class="bg-blue-50 text-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-semibold">Edit</button>
+        <button onclick="deleteUser('${u.id}','${u.nama}')" class="bg-red-50 text-red-500 rounded-lg px-2.5 py-1.5 text-xs font-semibold">Del</button>
+      </div>
+    </div>`).join('');
 }
 
 async function renderAdminTryouts(content) {
