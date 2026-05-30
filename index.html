@@ -104,8 +104,8 @@ a { text-decoration: none; color: inherit; }
     <h2>Masuk ke Akun</h2>
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div style="margin-bottom:14px;">
-        <label>Username</label>
-        <input id="loginUsername" type="text" class="input-field" placeholder="Masukkan username" autocomplete="username" required>
+        <label>Email</label>
+        <input id="loginUsername" type="email" class="input-field" placeholder="contoh@email.com" autocomplete="email" required>
       </div>
       <div style="margin-bottom:20px;">
         <label>Password</label>
@@ -148,10 +148,6 @@ a { text-decoration: none; color: inherit; }
       <div style="margin-bottom:14px;">
         <label>No. HP / WhatsApp</label>
         <input id="regPhone" type="tel" class="input-field" placeholder="08xxxxxxxxxx" required>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label>Username</label>
-        <input id="regUsername" type="text" class="input-field" placeholder="Tanpa spasi, huruf kecil" pattern="[a-z0-9_]+" title="Hanya huruf kecil, angka, dan underscore" required>
       </div>
       <div style="margin-bottom:14px;">
         <label>Password</label>
@@ -816,13 +812,14 @@ async function handleRegister(e) {
   const nama     = document.getElementById('regNama').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
   const phone    = document.getElementById('regPhone').value.trim();
-  const username = document.getElementById('regUsername').value.trim().toLowerCase();
   const pass     = document.getElementById('regPassword').value;
   const passConf = document.getElementById('regPasswordConfirm').value;
 
   if (pass !== passConf) { toast('Password dan konfirmasi tidak cocok', 'error'); return; }
   if (pass.length < 6)   { toast('Password minimal 6 karakter', 'error'); return; }
-  if (!/^[a-z0-9_]+$/.test(username)) { toast('Username hanya boleh huruf kecil, angka, dan underscore', 'error'); return; }
+
+  // Auto-generate username dari email (bagian sebelum @)
+  const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
 
   const btn = document.getElementById('btnRegister');
   btn.disabled = true; btn.textContent = 'Mendaftar...';
