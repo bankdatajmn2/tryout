@@ -124,7 +124,7 @@ a { text-decoration: none; color: inherit; }
 </div>
 
 <!-- ══════════ REGISTER ══════════ -->
-<div id="viewRegister" style="min-height:100vh;display:none;flex-direction:column;">
+<div id="viewRegister" class="hidden" style="min-height:100vh;flex-direction:column;">
   <div class="gradient-header" style="display:flex;align-items:center;gap:12px;padding:16px 20px;">
     <button onclick="showView('viewLogin')" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;">←</button>
     <div>
@@ -780,7 +780,10 @@ const NAV_MAP = {
 
 function showView(name) {
   ALL_VIEWS.forEach(v => document.getElementById(v).classList.add('hidden'));
-  document.getElementById(name).classList.remove('hidden');
+  const el = document.getElementById(name);
+  el.classList.remove('hidden');
+  // Flex views perlu display:flex setelah hidden dilepas
+  if (['viewLogin','viewRegister'].includes(name)) el.style.display = 'flex';
 
   const nav = document.getElementById('bottomNav');
   VIEWS_WITH_NAV.includes(name) ? nav.classList.remove('hidden') : nav.classList.add('hidden');
