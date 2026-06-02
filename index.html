@@ -564,11 +564,17 @@ a { text-decoration: none; color: inherit; }
         <div><label>Pilihan C</label><input id="qOptC" class="input-field" required></div>
         <div><label>Pilihan D</label><input id="qOptD" class="input-field" required></div>
         <div><label>Pilihan E <span class="text-gray-400 font-normal">(opsional)</span></label><input id="qOptE" class="input-field"></div>
-        <div><label>Kunci Jawaban</label>
-          <select id="qAnswer" class="input-field" required>
-            <option value="">Pilih...</option>
-            <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
-          </select>
+        <div>
+          <label>Kunci Jawaban <span style="font-weight:400;color:#6B7280;">(boleh lebih dari satu)</span></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="answerKeyBtns">
+            <button type="button" onclick="toggleAnswerKey(this,'A')" data-key="A" class="ans-key-btn" style="width:44px;height:44px;border-radius:10px;border:2px solid #E5E7EB;background:white;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.15s;">A</button>
+            <button type="button" onclick="toggleAnswerKey(this,'B')" data-key="B" class="ans-key-btn" style="width:44px;height:44px;border-radius:10px;border:2px solid #E5E7EB;background:white;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.15s;">B</button>
+            <button type="button" onclick="toggleAnswerKey(this,'C')" data-key="C" class="ans-key-btn" style="width:44px;height:44px;border-radius:10px;border:2px solid #E5E7EB;background:white;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.15s;">C</button>
+            <button type="button" onclick="toggleAnswerKey(this,'D')" data-key="D" class="ans-key-btn" style="width:44px;height:44px;border-radius:10px;border:2px solid #E5E7EB;background:white;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.15s;">D</button>
+            <button type="button" onclick="toggleAnswerKey(this,'E')" data-key="E" class="ans-key-btn" style="width:44px;height:44px;border-radius:10px;border:2px solid #E5E7EB;background:white;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.15s;">E</button>
+          </div>
+          <input type="hidden" id="qAnswer">
+          <p id="answerKeyError" style="color:#EF4444;font-size:12px;margin-top:4px;display:none;">Pilih minimal satu kunci jawaban</p>
         </div>
         <div><label>Pembahasan <span class="text-gray-400 font-normal">(opsional)</span></label><textarea id="qExplanation" class="input-field" rows="2"></textarea></div>
       </div>
@@ -1179,13 +1185,17 @@ function showReview() {
         ${['A','B','C','D','E'].map(l => {
           const txt = d['option_' + l.toLowerCase()];
           if (!txt) return '';
-          const isUser = d.userAnswer === l, isCor = d.correctAnswer === l;
-          let cls = 'bg-gray-50 text-gray-600';
-          if (isCor)            cls = 'bg-green-100 text-green-700 font-semibold';
-          if (isUser && !isCor) cls = 'bg-red-100 text-red-600';
-          return `<div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${cls}">
-            <span class="font-bold w-4">${l}</span><span class="flex-1">${txt}</span>
-            ${isUser ? '<span>👤</span>' : ''}${isCor ? '<span>✓</span>' : ''}
+          // correctAnswer bisa "A" atau "A,E" — cek apakah l ada di dalamnya
+          const correctKeys = (d.correctAnswer || '').toUpperCase().split(',').map(s => s.trim());
+          const isUser = d.userAnswer === l;
+          const isCor  = correctKeys.includes(l);
+          let cls = 'background:#F9FAFB;color:#4B5563;';
+          if (isCor)            cls = 'background:#DCFCE7;color:#15803D;font-weight:600;';
+          if (isUser && !isCor) cls = 'background:#FEE2E2;color:#DC2626;';
+          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;font-size:12px;${cls}">
+            <span style="font-weight:700;width:16px;">${l}</span>
+            <span style="flex:1;">${txt}</span>
+            ${isUser ? '<span>👤</span>' : ''}${isCor ? '<span style="color:#16A34A;font-weight:700;">✓</span>' : ''}
           </div>`;
         }).join('')}
       </div>
@@ -1669,12 +1679,45 @@ async function deleteTryout(tryoutId, title) {
   );
 }
 
+// ── Answer key multi-select helpers ──────────────────────
+function toggleAnswerKey(btn, key) {
+  const selected = btn.dataset.selected === 'true';
+  btn.dataset.selected = selected ? 'false' : 'true';
+  btn.style.background  = selected ? 'white'   : '#F97316';
+  btn.style.color       = selected ? '#1F2937' : 'white';
+  btn.style.borderColor = selected ? '#E5E7EB' : '#F97316';
+  syncAnswerKeyInput();
+}
+
+function syncAnswerKeyInput() {
+  const keys = [...document.querySelectorAll('.ans-key-btn')]
+    .filter(b => b.dataset.selected === 'true')
+    .map(b => b.dataset.key)
+    .sort()
+    .join(',');
+  document.getElementById('qAnswer').value = keys;
+  document.getElementById('answerKeyError').style.display = keys ? 'none' : 'none';
+}
+
+function setAnswerKeyBtns(keyStr) {
+  const active = (keyStr || '').toUpperCase().split(',').map(s => s.trim()).filter(Boolean);
+  document.querySelectorAll('.ans-key-btn').forEach(btn => {
+    const on = active.includes(btn.dataset.key);
+    btn.dataset.selected  = on ? 'true' : 'false';
+    btn.style.background  = on ? '#F97316' : 'white';
+    btn.style.color       = on ? 'white'   : '#1F2937';
+    btn.style.borderColor = on ? '#F97316' : '#E5E7EB';
+  });
+  syncAnswerKeyInput();
+}
+
 function openQuestionModal(tryoutId) {
+  if (!tryoutId) { toast('Pilih Tryout dulu', 'error'); return; }
   document.getElementById('modalQTitle').textContent = 'Tambah Soal';
   document.getElementById('qId').value          = '';
   document.getElementById('qTryoutId').value    = tryoutId;
   ['qText','qImage','qOptA','qOptB','qOptC','qOptD','qOptE','qExplanation'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('qAnswer').value = '';
+  setAnswerKeyBtns('');
   openModal('modalQuestion');
 }
 
@@ -1689,25 +1732,30 @@ function editQuestion(q) {
   document.getElementById('qOptC').value        = q.option_c;
   document.getElementById('qOptD').value        = q.option_d;
   document.getElementById('qOptE').value        = q.option_e || '';
-  document.getElementById('qAnswer').value      = q.answer_key;
   document.getElementById('qExplanation').value = q.explanation || '';
+  setAnswerKeyBtns(q.answer_key);
   openModal('modalQuestion');
 }
 
 async function saveQuestion(e) {
   e.preventDefault();
+  const answerKey = document.getElementById('qAnswer').value;
+  if (!answerKey) {
+    document.getElementById('answerKeyError').style.display = 'block';
+    return;
+  }
   const question = {
-    id:            document.getElementById('qId').value || undefined,
-    tryout_id:     document.getElementById('qTryoutId').value,
-    question_text: document.getElementById('qText').value,
+    id:             document.getElementById('qId').value || undefined,
+    tryout_id:      document.getElementById('qTryoutId').value,
+    question_text:  document.getElementById('qText').value,
     question_image: document.getElementById('qImage').value,
-    option_a:      document.getElementById('qOptA').value,
-    option_b:      document.getElementById('qOptB').value,
-    option_c:      document.getElementById('qOptC').value,
-    option_d:      document.getElementById('qOptD').value,
-    option_e:      document.getElementById('qOptE').value,
-    answer_key:    document.getElementById('qAnswer').value,
-    explanation:   document.getElementById('qExplanation').value,
+    option_a:       document.getElementById('qOptA').value,
+    option_b:       document.getElementById('qOptB').value,
+    option_c:       document.getElementById('qOptC').value,
+    option_d:       document.getElementById('qOptD').value,
+    option_e:       document.getElementById('qOptE').value,
+    answer_key:     answerKey,
+    explanation:    document.getElementById('qExplanation').value,
   };
   if (!question.id) delete question.id;
   const res = await rpc('admin_save_question', { p_admin_id: currentUser.id, p_question: question });
