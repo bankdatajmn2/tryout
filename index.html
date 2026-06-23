@@ -913,7 +913,10 @@ async function loadDashboard() {
   document.getElementById('dashDate').textContent    = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
   document.getElementById('dashPolda').textContent   = u.polda  || '—';
   document.getElementById('dashPolres').textContent  = u.polres || '—';
-  document.getElementById('statSubject').textContent = (u.allowed_subjects || []).length;
+  const _subjArr = Array.isArray(u.allowed_subjects)
+    ? u.allowed_subjects
+    : (u.allowed_subjects ? String(u.allowed_subjects).split(',').filter(Boolean) : []);
+  document.getElementById('statSubject').textContent = _subjArr.length;
 
   const stats = await rpc('get_user_stats', { p_user_id: u.id });
   if (stats && stats.success && stats.data) {
@@ -925,37 +928,60 @@ async function loadDashboard() {
 // ── SUBJECTS ────────────────────────────────────────────
 async function loadSubjects() {
   const u = currentUser;
-  let query = sb.from('subjects').select('id, nama_subject').order('id');
-
-  // Filter berdasarkan allowed_subjects (kecuali admin)
-  if (u.role !== 'admin' && u.allowed_subjects && u.allowed_subjects.length > 0) {
-    const ids = u.allowed_subjects.map(Number).filter(n => !isNaN(n));
-    if (ids.length > 0) query = sb.from('subjects').select('id, nama_subject').in('id', ids).order('id');
-  }
-
-  showLoading('subjects');
-  const { data: subjects, error } = await query;
-  hideLoading();
-
   const grid = document.getElementById('subjectGrid');
   grid.innerHTML = '';
 
-  if (error || !subjects || subjects.length === 0) {
-    grid.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-10">Belum ada subjek yang diaktifkan.<br>Hubungi admin.</div>';
-    return;
-  }
+  try {
+    let query = sb.from('subjects').select('id, nama_subject').order('id');
 
-  subjects.forEach(sub => {
-    const style = SUBJECT_STYLE[String(sub.id)] || { bg: 'linear-gradient(135deg,#6B7280,#374151)', icon: '📋' };
-    const div = document.createElement('div');
-    div.className = 'subject-card slide-up';
-    div.style.background = style.bg;
-    div.innerHTML = `<div class="text-3xl mb-2">${style.icon}</div>
-      <p class="font-bold text-sm leading-tight">${sub.nama_subject}</p>
-      <p class="text-xs text-white/70 mt-1">10 Tryout tersedia</p>`;
-    div.onclick = () => openSubject(sub.id, sub.nama_subject);
-    grid.appendChild(div);
-  });
+    // Filter berdasarkan allowed_subjects (kecuali admin)
+    if (u.role !== 'admin') {
+      const raw = u.allowed_subjects;
+      let ids = [];
+      if (Array.isArray(raw) && raw.length > 0) {
+        ids = raw.map(Number).filter(n => !isNaN(n) && n > 0);
+      } else if (raw && typeof raw === 'string' && raw.trim()) {
+        ids = raw.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0);
+      }
+      if (ids.length > 0) {
+        query = sb.from('subjects').select('id, nama_subject').in('id', ids).order('id');
+      }
+    }
+
+    showLoading('Memuat subjek...');
+    const { data: subjects, error } = await query;
+    hideLoading();
+
+    if (error) {
+      grid.innerHTML = `<div style="grid-column:span 2;text-align:center;padding:40px 0;color:#EF4444;font-size:14px;">
+        ⚠️ Gagal memuat subjek.<br><small style="color:#6B7280">${error.message}</small></div>`;
+      toast('Error: ' + error.message, 'error');
+      return;
+    }
+
+    if (!subjects || subjects.length === 0) {
+      grid.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:40px 0;color:#6B7280;font-size:14px;">Belum ada subjek yang diaktifkan.<br>Hubungi admin.</div>';
+      return;
+    }
+
+    subjects.forEach(sub => {
+      const style = SUBJECT_STYLE[String(sub.id)] || { bg: 'linear-gradient(135deg,#6B7280,#374151)', icon: '📋' };
+      const div = document.createElement('div');
+      div.className = 'subject-card slide-up';
+      div.style.background = style.bg;
+      div.innerHTML = `<div class="text-3xl mb-2">${style.icon}</div>
+        <p class="font-bold text-sm leading-tight">${sub.nama_subject}</p>
+        <p class="text-xs text-white/70 mt-1">10 Tryout tersedia</p>`;
+      div.onclick = () => openSubject(sub.id, sub.nama_subject);
+      grid.appendChild(div);
+    });
+
+  } catch(e) {
+    hideLoading();
+    grid.innerHTML = `<div style="grid-column:span 2;text-align:center;padding:40px 0;color:#EF4444;font-size:14px;">
+      ⚠️ Terjadi kesalahan.<br><small style="color:#6B7280">${e.message}</small></div>`;
+    toast('Kesalahan: ' + e.message, 'error');
+  }
 }
 
 async function openSubject(subjectId, subjectName) {
