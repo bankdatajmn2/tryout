@@ -108,11 +108,11 @@ a { text-decoration: none; color: inherit; }
       <span style="color:#d7a64c;">Casisjuara</span> Menggapai Mimpi<br>Menjadi Polisi
     </p>
     <!-- Two Officers -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:16px;">
       <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/153.png"
-           style="height:190px;object-fit:contain;object-position:bottom;" alt="polisi pria">
+           style="height:380px;object-fit:contain;object-position:bottom;transform:translateY(10px) translateX(-20px);margin-left:-8px;flex-shrink:0;" alt="polisi pria">
       <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/154.png"
-           style="height:190px;object-fit:contain;object-position:bottom;" alt="polisi wanita">
+           style="height:380px;object-fit:contain;object-position:bottom;transform:translateY(60px) translateX(-110px) scale(1.1);flex-shrink:0;transform-origin:bottom center;" alt="polisi wanita">
     </div>
   </div>
   <div class="login-card slide-up" style="flex:1;">
@@ -319,7 +319,13 @@ a { text-decoration: none; color: inherit; }
     </div>
     <div id="questionText" class="text-gray-800 text-sm leading-relaxed mb-3 font-medium"></div>
     <div id="questionImageWrap" class="hidden mb-3">
-      <img id="questionImage" src="" alt="" class="rounded-xl max-w-full border border-gray-100">
+      <div style="position:relative;display:inline-block;width:100%;">
+        <img id="questionImage" src="" alt="" class="rounded-xl max-w-full border border-gray-100" style="width:100%;">
+        <button onclick="toggleImgInvert()" id="btnInvert"
+          style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;backdrop-filter:blur(4px);">
+          ⬛ Invert
+        </button>
+      </div>
     </div>
     <div id="optionsContainer" class="space-y-2.5 pb-4"></div>
   </div>
@@ -1084,6 +1090,14 @@ function updateTimerDisplay() {
   el.className   = 'font-bold text-lg font-mono ' + (engineTimerSec <= 300 ? 'text-red-300' : '');
 }
 
+function toggleImgInvert() {
+  const img = document.getElementById('questionImage');
+  const btn = document.getElementById('btnInvert');
+  const isInverted = img.style.filter === 'invert(1)';
+  img.style.filter = isInverted ? '' : 'invert(1)';
+  btn.textContent  = isInverted ? '⬛ Invert' : '⬜ Normal';
+}
+
 function renderQuestion(idx) {
   if (!engineQuestions[idx]) return;
   const q      = engineQuestions[idx];
@@ -1094,7 +1108,10 @@ function renderQuestion(idx) {
 
   const imgWrap = document.getElementById('questionImageWrap');
   if (q.question_image) {
-    document.getElementById('questionImage').src = q.question_image;
+    const imgEl = document.getElementById('questionImage');
+    imgEl.src = q.question_image;
+    imgEl.style.filter = '';               // reset invert tiap soal baru
+    document.getElementById('btnInvert').textContent = '⬛ Invert';
     imgWrap.classList.remove('hidden');
   } else { imgWrap.classList.add('hidden'); }
 
