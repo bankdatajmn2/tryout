@@ -318,14 +318,12 @@ a { text-decoration: none; color: inherit; }
       </div>
     </div>
     <div id="questionText" class="text-gray-800 text-sm leading-relaxed mb-3 font-medium"></div>
-    <div id="questionImageWrap" class="hidden mb-3">
-      <div style="position:relative;display:inline-block;width:100%;">
-        <img id="questionImage" src="" alt="" class="rounded-xl max-w-full border border-gray-100" style="width:100%;">
-        <button onclick="toggleImgInvert()" id="btnInvert"
-          style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;backdrop-filter:blur(4px);">
-          ⬛ Invert
-        </button>
-      </div>
+    <div id="questionImageWrap" class="hidden mb-3" style="position:relative;">
+      <img id="questionImage" src="" alt="" class="rounded-xl max-w-full border border-gray-100" style="width:100%;display:block;">
+      <button onclick="toggleImgInvert()" id="btnInvert"
+        style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;backdrop-filter:blur(4px);">
+        ⬛ Invert
+      </button>
     </div>
     <div id="optionsContainer" class="space-y-2.5 pb-4"></div>
   </div>
