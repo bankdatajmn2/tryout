@@ -109,9 +109,9 @@ a { text-decoration: none; color: inherit; }
     </p>
     <!-- Two Officers -->
     <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:16px;">
-      <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/153.png"
+      <img id="heroImgMale" src=""
            style="height:380px;object-fit:contain;object-position:bottom;transform:translateY(10px) translateX(-20px);margin-left:-8px;flex-shrink:0;" alt="polisi pria">
-      <img src="https://nhoskphuhqwpficbmpox.supabase.co/storage/v1/object/public/soal-images/hero/154.png"
+      <img id="heroImgFemale" src=""
            style="height:380px;object-fit:contain;object-position:bottom;transform:translateY(60px) translateX(-110px) scale(1.1);flex-shrink:0;transform-origin:bottom center;" alt="polisi wanita">
     </div>
   </div>
@@ -470,11 +470,12 @@ a { text-decoration: none; color: inherit; }
     <div><h2 class="font-bold text-lg">⚙️ Panel Admin</h2></div>
   </div>
   <div class="flex border-b border-gray-200 bg-white sticky top-0 z-10 overflow-x-auto">
-    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-orange-500 border-b-2 border-orange-500 whitespace-nowrap px-2" onclick="switchAdminTab('pending')"   id="tabPending">🕐 Pending <span id="pendingBadge" class="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full hidden">0</span></button>
-    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('users')"     id="tabUsers">👥 Users</button>
-    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('tryouts')"   id="tabTryouts">📋 Tryout</button>
-    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('questions')" id="tabQuestions">❓ Soal</button>
-    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('results')"   id="tabResults">📊 Hasil</button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-orange-500 border-b-2 border-orange-500 whitespace-nowrap px-2" onclick="switchAdminTab('pending')"    id="tabPending">🕐 Pending <span id="pendingBadge" class="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full hidden">0</span></button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('users')"      id="tabUsers">👥 Users</button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('tryouts')"    id="tabTryouts">📋 Tryout</button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('questions')"  id="tabQuestions">❓ Soal</button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('results')"    id="tabResults">📊 Hasil</button>
+    <button class="admin-tab flex-1 py-3 text-xs font-semibold text-gray-400 whitespace-nowrap px-2"                                  onclick="switchAdminTab('appearance')" id="tabAppearance">🖼️ Tampilan</button>
   </div>
   <div id="adminContent" class="px-4 py-4"></div>
 </div>
@@ -656,6 +657,7 @@ a { text-decoration: none; color: inherit; }
 // ═══ KONFIGURASI — ISI INI! ════════════════════════════
 const SUPABASE_URL      = 'https://nhoskphuhqwpficbmpox.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ob3NrcGh1aHF3cGZpY2JtcG94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTE0NjksImV4cCI6MjA5NTUyNzQ2OX0.4LFnCIwze1gCwufot4h4kjA87YPfAnGf0kEnfOi5uIg';
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ob3NrcGh1aHF3cGZpY2JtcG94Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk1MTQ2OSwiZXhwIjoyMDk1NTI3NDY5fQ.jHwpilRtXpUL0WCn8KSybfM0m4GAsYzRh8jBMMyJg9o';
 // Anon key ditemukan di: Supabase Dashboard → Project Settings → API → anon public
 // Bentuknya dimulai dengan: eyJhbGci...
 // ══════════════════════════════════════════════════════
@@ -1371,7 +1373,7 @@ function fillProfile() {
 // ── ADMIN ────────────────────────────────────────────────
 function switchAdminTab(tab) {
   adminCurrentTab = tab;
-  ['pending','users','tryouts','questions','results'].forEach(t => {
+  ['pending','users','tryouts','questions','results','appearance'].forEach(t => {
     const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
     if (!btn) return;
     const base = 'admin-tab flex-1 py-3 text-xs font-semibold whitespace-nowrap px-2 ';
@@ -1384,11 +1386,12 @@ async function loadAdminTab() {
   if (!currentUser || currentUser.role !== 'admin') return;
   const content = document.getElementById('adminContent');
   content.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">Memuat...</div>';
-  if (adminCurrentTab === 'pending')   await renderAdminPending(content);
-  if (adminCurrentTab === 'users')     await renderAdminUsers(content);
-  if (adminCurrentTab === 'tryouts')   await renderAdminTryouts(content);
-  if (adminCurrentTab === 'questions') await renderAdminQuestions(content);
-  if (adminCurrentTab === 'results')   await renderAdminResults(content);
+  if (adminCurrentTab === 'pending')    await renderAdminPending(content);
+  if (adminCurrentTab === 'users')      await renderAdminUsers(content);
+  if (adminCurrentTab === 'tryouts')    await renderAdminTryouts(content);
+  if (adminCurrentTab === 'questions')  await renderAdminQuestions(content);
+  if (adminCurrentTab === 'results')    await renderAdminResults(content);
+  if (adminCurrentTab === 'appearance') renderAdminAppearance(content);
 }
 
 async function renderAdminPending(content) {
@@ -1609,6 +1612,133 @@ async function renderAdminResults(content) {
           </div>
         </div>`).join('')}
     </div>`;
+}
+
+// ── Admin: Tampilan (Hero Images) ────────────────────────
+const HERO_BASE = `${SUPABASE_URL}/storage/v1/object/public/soal-images/hero/`;
+const HERO_MALE_FILE   = '153.png';
+const HERO_FEMALE_FILE = '154.png';
+
+function getHeroUrl(filename) {
+  const ts = localStorage.getItem('hero_ts_' + filename) || '';
+  return HERO_BASE + filename + (ts ? '?t=' + ts : '');
+}
+
+function loadHeroImages() {
+  const male   = document.getElementById('heroImgMale');
+  const female = document.getElementById('heroImgFemale');
+  if (male)   male.src   = getHeroUrl(HERO_MALE_FILE);
+  if (female) female.src = getHeroUrl(HERO_FEMALE_FILE);
+}
+
+function renderAdminAppearance(content) {
+  content.innerHTML = `
+    <p class="font-semibold text-gray-700 mb-1">🖼️ Gambar Hero (Halaman Login)</p>
+    <p class="text-xs text-gray-400 mb-4">Upload gambar untuk mengganti foto petugas di halaman login.</p>
+
+    <!-- Spek -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-xs text-blue-800 space-y-1">
+      <p class="font-semibold">📐 Spesifikasi yang Dianjurkan</p>
+      <p>• Format: <strong>PNG</strong> (utamakan) atau JPG</p>
+      <p>• Ukuran: <strong>500 × 700 px</strong> atau lebih tinggi (portrait)</p>
+      <p>• Latar: <strong>Transparan</strong> (PNG) supaya menyatu dengan background</p>
+      <p>• Maks. ukuran file: <strong>5 MB</strong></p>
+      <p>• Rasio ideal: 3:4 hingga 2:3 (tinggi lebih dari lebar)</p>
+    </div>
+
+    <!-- Pria -->
+    <div class="bg-white rounded-2xl card-shadow p-4 mb-3">
+      <p class="font-semibold text-sm text-gray-700 mb-2">👮 Gambar Petugas Pria</p>
+      <div class="flex gap-3 items-start">
+        <img id="prevMale" src="${getHeroUrl(HERO_MALE_FILE)}"
+             style="width:80px;height:110px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:10px;background:#f3f4f6;" alt="preview pria">
+        <div class="flex-1">
+          <label class="block text-xs text-gray-500 mb-1">Upload gambar baru</label>
+          <input type="file" id="fileMale" accept="image/png,image/jpeg"
+                 onchange="previewHeroImg(this,'prevMale')"
+                 class="w-full text-xs border border-gray-200 rounded-lg p-2 bg-gray-50">
+          <p class="text-xs text-gray-400 mt-1">PNG/JPG · maks 5 MB</p>
+          <button onclick="uploadHeroImage('male')"
+                  class="mt-2 btn-primary text-xs px-4 py-2 w-full">
+            ⬆️ Upload &amp; Ganti Gambar Pria
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wanita -->
+    <div class="bg-white rounded-2xl card-shadow p-4 mb-4">
+      <p class="font-semibold text-sm text-gray-700 mb-2">👮‍♀️ Gambar Petugas Wanita</p>
+      <div class="flex gap-3 items-start">
+        <img id="prevFemale" src="${getHeroUrl(HERO_FEMALE_FILE)}"
+             style="width:80px;height:110px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:10px;background:#f3f4f6;" alt="preview wanita">
+        <div class="flex-1">
+          <label class="block text-xs text-gray-500 mb-1">Upload gambar baru</label>
+          <input type="file" id="fileFemale" accept="image/png,image/jpeg"
+                 onchange="previewHeroImg(this,'prevFemale')"
+                 class="w-full text-xs border border-gray-200 rounded-lg p-2 bg-gray-50">
+          <p class="text-xs text-gray-400 mt-1">PNG/JPG · maks 5 MB</p>
+          <button onclick="uploadHeroImage('female')"
+                  class="mt-2 btn-primary text-xs px-4 py-2 w-full">
+            ⬆️ Upload &amp; Ganti Gambar Wanita
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="heroUploadStatus"></div>`;
+}
+
+function previewHeroImg(input, previewId) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    toast('File terlalu besar! Maks 5 MB.', 'error');
+    input.value = '';
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  document.getElementById(previewId).src = url;
+}
+
+async function uploadHeroImage(gender) {
+  const fileInput = document.getElementById(gender === 'male' ? 'fileMale' : 'fileFemale');
+  const statusEl  = document.getElementById('heroUploadStatus');
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    toast('Pilih file gambar terlebih dahulu.', 'error'); return;
+  }
+  const file     = fileInput.files[0];
+  const filename = gender === 'male' ? HERO_MALE_FILE : HERO_FEMALE_FILE;
+  const mimeType = file.type || (file.name.endsWith('.png') ? 'image/png' : 'image/jpeg');
+  statusEl.innerHTML = `<div class="text-center text-sm text-gray-400 py-2">⏳ Mengupload ${filename}…</div>`;
+
+  try {
+    const url = `${SUPABASE_URL}/storage/v1/object/soal-images/hero/${filename}`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': mimeType,
+        'x-upsert': 'true',
+      },
+      body: file,
+    });
+    if (resp.ok || resp.status === 200 || resp.status === 201 || resp.status === 200) {
+      const ts = Date.now().toString();
+      localStorage.setItem('hero_ts_' + filename, ts);
+      loadHeroImages();
+      statusEl.innerHTML = `<div class="text-center text-sm text-green-600 py-2 font-semibold">✅ Berhasil upload ${filename}! Halaman login sudah diperbarui.</div>`;
+      toast('Upload berhasil!', 'success');
+      fileInput.value = '';
+    } else {
+      const body = await resp.text();
+      statusEl.innerHTML = `<div class="text-center text-sm text-red-500 py-2">❌ Gagal upload: HTTP ${resp.status}<br><small>${body.slice(0,120)}</small></div>`;
+      toast('Upload gagal: ' + resp.status, 'error');
+    }
+  } catch(e) {
+    statusEl.innerHTML = `<div class="text-center text-sm text-red-500 py-2">❌ Error: ${e.message}</div>`;
+    toast('Error: ' + e.message, 'error');
+  }
 }
 
 // ── Admin modals ─────────────────────────────────────────
@@ -1986,6 +2116,7 @@ function init() {
       afterLogin(); return;
     } catch(e) { localStorage.removeItem('tryout_session'); }
   }
+  loadHeroImages();
   showView('viewLogin');
 }
 
