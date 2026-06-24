@@ -932,7 +932,7 @@ async function loadSubjects() {
   grid.innerHTML = '';
 
   try {
-    let query = sb.from('subjects').select('id, nama_subject').order('id');
+    let query = sb.from('subjects').select('id, nama_subject, tryouts(count)').order('id');
 
     // Filter berdasarkan allowed_subjects (kecuali admin)
     if (u.role !== 'admin') {
@@ -944,7 +944,7 @@ async function loadSubjects() {
         ids = raw.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0);
       }
       if (ids.length > 0) {
-        query = sb.from('subjects').select('id, nama_subject').in('id', ids).order('id');
+        query = sb.from('subjects').select('id, nama_subject, tryouts(count)').in('id', ids).order('id');
       }
     }
 
@@ -966,12 +966,13 @@ async function loadSubjects() {
 
     subjects.forEach(sub => {
       const style = SUBJECT_STYLE[String(sub.id)] || { bg: 'linear-gradient(135deg,#6B7280,#374151)', icon: '📋' };
+      const tryoutCount = sub.tryouts?.[0]?.count ?? 0;
       const div = document.createElement('div');
       div.className = 'subject-card slide-up';
       div.style.background = style.bg;
       div.innerHTML = `<div class="text-3xl mb-2">${style.icon}</div>
         <p class="font-bold text-sm leading-tight">${sub.nama_subject}</p>
-        <p class="text-xs text-white/70 mt-1">10 Tryout tersedia</p>`;
+        <p class="text-xs text-white/70 mt-1">${tryoutCount} Tryout tersedia</p>`;
       div.onclick = () => openSubject(sub.id, sub.nama_subject);
       grid.appendChild(div);
     });
