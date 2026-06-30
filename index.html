@@ -597,6 +597,22 @@ a { text-decoration: none; color: inherit; }
           <p id="answerKeyError" style="color:#EF4444;font-size:12px;margin-top:4px;display:none;">Pilih minimal satu kunci jawaban</p>
         </div>
         <div><label>Pembahasan <span class="text-gray-400 font-normal">(opsional)</span></label><textarea id="qExplanation" class="input-field" rows="2"></textarea></div>
+        <div>
+          <label>Gambar Kunci Jawaban <span class="text-gray-400 font-normal">(opsional)</span></label>
+          <input type="hidden" id="qExplanationImage">
+          <div id="qExpImagePreview" class="hidden mb-2 relative">
+            <img id="qExpImagePreviewImg" src="" alt="preview gambar pembahasan" style="width:100%;max-height:160px;object-fit:contain;border-radius:12px;border:1.5px solid #E5E7EB;background:#F9FAFB;">
+            <button type="button" onclick="removeExplanationImage()" style="position:absolute;top:6px;right:6px;background:#EF4444;color:white;border:none;border-radius:50%;width:24px;height:24px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+          </div>
+          <div id="qExpImageUploadArea">
+            <label for="qExpImageFile" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:72px;border:2px dashed #D1D5DB;border-radius:12px;cursor:pointer;background:#F9FAFB;transition:border-color .2s;" onmouseover="this.style.borderColor='#d7a64c'" onmouseout="this.style.borderColor='#D1D5DB'">
+              <span style="font-size:20px;margin-bottom:3px">📝</span>
+              <span style="font-size:11px;color:#6B7280">Klik untuk pilih gambar pembahasan</span>
+              <input type="file" id="qExpImageFile" accept="image/*" class="hidden" onchange="handleExplanationImageUpload(this)">
+            </label>
+          </div>
+          <div id="qExpImageUploadStatus"></div>
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-3 mt-5">
         <button type="button" onclick="closeModal('modalQuestion')" class="btn-secondary py-3 text-sm">Batal</button>
@@ -1778,6 +1794,46 @@ function removeQuestionImage() {
 
 function resetQuestionImageUI() {
   removeQuestionImage();
+  removeExplanationImage();
+}
+
+async function handleExplanationImageUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('Gambar maks 5MB', 'error'); input.value = ''; return; }
+  const statusEl = document.getElementById('qExpImageUploadStatus');
+  statusEl.innerHTML = '<p style="font-size:11px;color:#6B7280;padding:4px 0">⏳ Mengupload gambar...</p>';
+  try {
+    const ext      = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const mime     = file.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
+    const filename = `exp_${Date.now()}.${ext}`;
+    const resp = await fetch(`${SUPABASE_URL}/storage/v1/object/soal-images/questions/${filename}`, {
+      method : 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': mime, 'x-upsert': 'true' },
+      body   : file,
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/soal-images/questions/${filename}`;
+    document.getElementById('qExplanationImage').value         = publicUrl;
+    document.getElementById('qExpImagePreviewImg').src         = publicUrl;
+    document.getElementById('qExpImagePreview').classList.remove('hidden');
+    document.getElementById('qExpImageUploadArea').classList.add('hidden');
+    statusEl.innerHTML = '<p style="font-size:11px;color:#10B981;padding:4px 0">✅ Gambar pembahasan berhasil diupload!</p>';
+    toast('Gambar pembahasan diupload!', 'success');
+  } catch(e) {
+    statusEl.innerHTML = `<p style="font-size:11px;color:#EF4444;padding:4px 0">❌ Gagal: ${e.message}</p>`;
+    toast('Upload gagal: ' + e.message, 'error');
+    input.value = '';
+  }
+}
+
+function removeExplanationImage() {
+  document.getElementById('qExplanationImage').value                  = '';
+  document.getElementById('qExpImagePreviewImg').src                 = '';
+  document.getElementById('qExpImagePreview').classList.add('hidden');
+  document.getElementById('qExpImageUploadArea').classList.remove('hidden');
+  document.getElementById('qExpImageUploadStatus').innerHTML         = '';
+  document.getElementById('qExpImageFile').value                     = '';
 }
 
 // ── Admin modals ─────────────────────────────────────────
@@ -1946,7 +2002,7 @@ function editQuestion(q) {
   document.getElementById('qOptE').value        = q.option_e || '';
   document.getElementById('qExplanation').value = q.explanation || '';
   setAnswerKeyBtns(q.answer_key);
-  // Tampilkan preview gambar jika ada
+  // Tampilkan preview gambar soal jika ada
   if (q.question_image) {
     document.getElementById('qImage').value = q.question_image;
     document.getElementById('qImagePreviewImg').src = q.question_image;
@@ -1954,7 +2010,17 @@ function editQuestion(q) {
     document.getElementById('qImageUploadArea').classList.add('hidden');
     document.getElementById('qImageUploadStatus').innerHTML = '';
   } else {
-    resetQuestionImageUI();
+    removeQuestionImage();
+  }
+  // Tampilkan preview gambar pembahasan jika ada
+  if (q.explanation_image) {
+    document.getElementById('qExplanationImage').value = q.explanation_image;
+    document.getElementById('qExpImagePreviewImg').src = q.explanation_image;
+    document.getElementById('qExpImagePreview').classList.remove('hidden');
+    document.getElementById('qExpImageUploadArea').classList.add('hidden');
+    document.getElementById('qExpImageUploadStatus').innerHTML = '';
+  } else {
+    removeExplanationImage();
   }
   openModal('modalQuestion');
 }
@@ -1976,8 +2042,9 @@ async function saveQuestion(e) {
     option_c:       document.getElementById('qOptC').value,
     option_d:       document.getElementById('qOptD').value,
     option_e:       document.getElementById('qOptE').value,
-    answer_key:     answerKey,
-    explanation:    document.getElementById('qExplanation').value,
+    answer_key:         answerKey,
+    explanation:        document.getElementById('qExplanation').value,
+    explanation_image:  document.getElementById('qExplanationImage').value || null,
   };
   if (!question.id) delete question.id;
   const res = await rpc('admin_save_question', { p_admin_id: currentUser.id, p_question: question });
