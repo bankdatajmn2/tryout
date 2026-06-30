@@ -40,6 +40,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .option-btn.selected { border-color: #d7a64c; background: #FFF7ED; }
 .option-btn.correct  { border-color: #22C55E; background: #F0FDF4; }
 .option-btn.wrong    { border-color: #EF4444; background: #FEF2F2; }
+.opt-img-wrap { margin-top: 5px; }
+.opt-img-toggle { font-size:11px; color:#6B7280; background:none; border:1px dashed #D1D5DB; border-radius:8px; padding:3px 8px; cursor:pointer; }
+.opt-img-toggle:hover { border-color:#d7a64c; color:#d7a64c; }
+.opt-img-preview { position:relative; display:inline-block; margin-top:5px; }
+.opt-img-preview img { max-height:80px; border-radius:8px; border:1.5px solid #E5E7EB; display:block; }
+.opt-img-preview .rm { position:absolute; top:-6px; right:-6px; background:#EF4444; color:white; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .q-dot { width: 34px; height: 34px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .q-dot.answered { background: #d7a64c; color: white; }
 .q-dot.current  { background: #182f57; color: white; }
@@ -579,11 +585,12 @@ a { text-decoration: none; color: inherit; }
           </div>
           <div id="qImageUploadStatus"></div>
         </div>
-        <div><label>Pilihan A</label><input id="qOptA" class="input-field" required></div>
-        <div><label>Pilihan B</label><input id="qOptB" class="input-field" required></div>
-        <div><label>Pilihan C</label><input id="qOptC" class="input-field" required></div>
-        <div><label>Pilihan D</label><input id="qOptD" class="input-field" required></div>
-        <div><label>Pilihan E <span class="text-gray-400 font-normal">(opsional)</span></label><input id="qOptE" class="input-field"></div>
+        <!-- Pilihan A-E dengan optional upload gambar -->
+        <div><label>Pilihan A</label><input id="qOptA" class="input-field" required><div id="optImgWrapA" class="opt-img-wrap"></div></div>
+        <div><label>Pilihan B</label><input id="qOptB" class="input-field" required><div id="optImgWrapB" class="opt-img-wrap"></div></div>
+        <div><label>Pilihan C</label><input id="qOptC" class="input-field" required><div id="optImgWrapC" class="opt-img-wrap"></div></div>
+        <div><label>Pilihan D</label><input id="qOptD" class="input-field" required><div id="optImgWrapD" class="opt-img-wrap"></div></div>
+        <div><label>Pilihan E <span class="text-gray-400 font-normal">(opsional)</span></label><input id="qOptE" class="input-field"><div id="optImgWrapE" class="opt-img-wrap"></div></div>
         <div>
           <label>Kunci Jawaban <span style="font-weight:400;color:#6B7280;">(boleh lebih dari satu)</span></label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="answerKeyBtns">
@@ -1151,14 +1158,18 @@ function renderQuestion(idx) {
   opts.innerHTML = '';
 
   ['A','B','C','D','E'].forEach(letter => {
-    const txt = q['option_' + letter.toLowerCase()];
-    if (!txt) return;
+    const txt    = q['option_' + letter.toLowerCase()];
+    const imgUrl = q['option_' + letter.toLowerCase() + '_image'];
+    if (!txt && !imgUrl) return;
     const btn = document.createElement('button');
     btn.className = 'option-btn w-full p-3.5 flex items-start gap-3' + (chosen === letter ? ' selected' : '');
     btn.innerHTML = `
-      <span class="min-w-[26px] h-[26px] rounded-lg flex items-center justify-center text-xs font-bold border
+      <span class="min-w-[26px] h-[26px] rounded-lg flex items-center justify-center text-xs font-bold border shrink-0
         ${chosen === letter ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-200 text-gray-500'}">${letter}</span>
-      <span class="text-sm text-gray-700 leading-snug text-left">${txt}</span>`;
+      <span class="text-sm text-gray-700 leading-snug text-left flex-1">
+        ${txt || ''}
+        ${imgUrl ? `<img src="${imgUrl}" alt="gambar pilihan ${letter}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:6px;display:block;object-fit:contain;">` : ''}
+      </span>`;
     btn.onclick = () => selectAnswer(q.id, letter);
     opts.appendChild(btn);
   });
@@ -1827,6 +1838,68 @@ async function handleExplanationImageUpload(input) {
   }
 }
 
+// ── Upload Gambar Pilihan Jawaban ─────────────────────────
+function renderOptImgWrap(letter, existingUrl) {
+  const wrap = document.getElementById('optImgWrap' + letter);
+  if (!wrap) return;
+  if (existingUrl) {
+    wrap.innerHTML = `
+      <input type="hidden" id="qOpt${letter}Image" value="${existingUrl}">
+      <div class="opt-img-preview">
+        <img src="${existingUrl}" alt="gambar pilihan ${letter}">
+        <button type="button" class="rm" onclick="removeOptionImage('${letter}')">✕</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <input type="hidden" id="qOpt${letter}Image" value="">
+      <button type="button" class="opt-img-toggle" onclick="triggerOptImgUpload('${letter}')">🖼️ + gambar</button>
+      <input type="file" id="qOpt${letter}File" accept="image/*" class="hidden" onchange="handleOptionImageUpload(this,'${letter}')">`;
+  }
+}
+
+function triggerOptImgUpload(letter) {
+  document.getElementById('qOpt' + letter + 'File').click();
+}
+
+async function handleOptionImageUpload(input, letter) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { toast('Gambar maks 5MB', 'error'); input.value=''; return; }
+  const wrap = document.getElementById('optImgWrap' + letter);
+  wrap.querySelector('.opt-img-toggle').textContent = '⏳ Upload...';
+  try {
+    const ext      = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const mime     = file.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
+    const filename = `opt_${letter.toLowerCase()}_${Date.now()}.${ext}`;
+    const resp = await fetch(`${SUPABASE_URL}/storage/v1/object/soal-images/questions/${filename}`, {
+      method : 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': mime, 'x-upsert': 'true' },
+      body   : file,
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const url = `${SUPABASE_URL}/storage/v1/object/public/soal-images/questions/${filename}`;
+    renderOptImgWrap(letter, url);
+    toast(`Gambar pilihan ${letter} diupload!`, 'success');
+  } catch(e) {
+    toast('Upload gagal: ' + e.message, 'error');
+    renderOptImgWrap(letter, '');
+  }
+  input.value = '';
+}
+
+function removeOptionImage(letter) {
+  renderOptImgWrap(letter, '');
+}
+
+function resetAllOptImages() {
+  ['A','B','C','D','E'].forEach(l => renderOptImgWrap(l, ''));
+}
+
+function getOptImageVal(letter) {
+  const el = document.getElementById('qOpt' + letter + 'Image');
+  return el ? el.value : '';
+}
+
 function removeExplanationImage() {
   document.getElementById('qExplanationImage').value                  = '';
   document.getElementById('qExpImagePreviewImg').src                 = '';
@@ -1986,6 +2059,7 @@ function openQuestionModal(tryoutId) {
   ['qText','qImage','qOptA','qOptB','qOptC','qOptD','qOptE','qExplanation'].forEach(id => document.getElementById(id).value = '');
   setAnswerKeyBtns('');
   resetQuestionImageUI();
+  resetAllOptImages();
   openModal('modalQuestion');
 }
 
@@ -2012,6 +2086,8 @@ function editQuestion(q) {
   } else {
     removeQuestionImage();
   }
+  // Populate gambar pilihan jawaban
+  ['A','B','C','D','E'].forEach(l => renderOptImgWrap(l, q['option_' + l.toLowerCase() + '_image'] || ''));
   // Tampilkan preview gambar pembahasan jika ada
   if (q.explanation_image) {
     document.getElementById('qExplanationImage').value = q.explanation_image;
@@ -2045,6 +2121,11 @@ async function saveQuestion(e) {
     answer_key:         answerKey,
     explanation:        document.getElementById('qExplanation').value,
     explanation_image:  document.getElementById('qExplanationImage').value || null,
+    option_a_image:     getOptImageVal('A') || null,
+    option_b_image:     getOptImageVal('B') || null,
+    option_c_image:     getOptImageVal('C') || null,
+    option_d_image:     getOptImageVal('D') || null,
+    option_e_image:     getOptImageVal('E') || null,
   };
   if (!question.id) delete question.id;
   const res = await rpc('admin_save_question', { p_admin_id: currentUser.id, p_question: question });
