@@ -561,7 +561,24 @@ a { text-decoration: none; color: inherit; }
       <input type="hidden" id="qId"><input type="hidden" id="qTryoutId">
       <div class="space-y-2.5">
         <div><label>Teks Soal</label><textarea id="qText" class="input-field" rows="3" required placeholder="Tuliskan soal..."></textarea></div>
-        <div><label>URL Gambar <span class="text-gray-400 font-normal">(opsional)</span></label><input id="qImage" class="input-field" placeholder="https://..."></div>
+        <div>
+          <label>Gambar Soal <span class="text-gray-400 font-normal">(opsional)</span></label>
+          <input type="hidden" id="qImage">
+          <!-- Preview jika sudah ada gambar -->
+          <div id="qImagePreview" class="hidden mb-2 relative">
+            <img id="qImagePreviewImg" src="" alt="preview gambar soal" style="width:100%;max-height:160px;object-fit:contain;border-radius:12px;border:1.5px solid #E5E7EB;background:#F9FAFB;">
+            <button type="button" onclick="removeQuestionImage()" style="position:absolute;top:6px;right:6px;background:#EF4444;color:white;border:none;border-radius:50%;width:24px;height:24px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+          </div>
+          <!-- Area upload -->
+          <div id="qImageUploadArea">
+            <label for="qImageFile" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:80px;border:2px dashed #D1D5DB;border-radius:12px;cursor:pointer;background:#F9FAFB;transition:border-color .2s;" onmouseover="this.style.borderColor='#d7a64c'" onmouseout="this.style.borderColor='#D1D5DB'">
+              <span style="font-size:22px;margin-bottom:4px">🖼️</span>
+              <span style="font-size:11px;color:#6B7280">Klik untuk pilih gambar soal</span>
+              <input type="file" id="qImageFile" accept="image/*" class="hidden" onchange="handleQuestionImageUpload(this)">
+            </label>
+          </div>
+          <div id="qImageUploadStatus"></div>
+        </div>
         <div><label>Pilihan A</label><input id="qOptA" class="input-field" required></div>
         <div><label>Pilihan B</label><input id="qOptB" class="input-field" required></div>
         <div><label>Pilihan C</label><input id="qOptC" class="input-field" required></div>
@@ -1552,7 +1569,7 @@ async function renderAdminQuestions(content) {
   const tryouts = tryRes.data || [];
 
   content.innerHTML = `
-    <div class="flex gap-2 mb-3 items-center">
+    <div class="flex gap-2 mb-3 items-center flex-wrap">
       <select id="qFilterTryout" class="input-field flex-1 text-xs py-2" onchange="filterQuestions(this.value)">
         <option value="">— Pilih Tryout —</option>
         ${tryouts.map(t => `<option value="${t.id}">${t.title}</option>`).join('')}
@@ -1562,6 +1579,7 @@ async function renderAdminQuestions(content) {
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Excel
       </button>
+      <button onclick="deleteAllQuestions()" class="px-3 py-2 text-xs whitespace-nowrap font-semibold rounded-2xl" style="background:#FEE2E2;color:#EF4444;border:none;cursor:pointer">🗑 Hapus Semua</button>
     </div>
     <div id="questionListAdmin"></div>`;
 }
@@ -1572,6 +1590,7 @@ async function filterQuestions(tryoutId) {
   const res = await rpc('admin_get_questions', { p_admin_id: currentUser.id, p_tryout_id: tryoutId });
   if (!res || !res.success) { con.innerHTML = '<p class="text-red-500 text-xs">' + (res?.message||'Error') + '</p>'; return; }
   const qs = res.data || [];
+  window._lastQuestions = qs; // simpan untuk Hapus Semua
   if (!qs.length) { con.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">Belum ada soal.</div>'; return; }
   con.innerHTML = `<div class="space-y-2">
     ${qs.map((q, i) => `
@@ -1715,6 +1734,50 @@ async function uploadHeroImage() {
     statusEl.innerHTML = `<div class="text-center text-sm text-red-500 py-2">❌ Error: ${e.message}</div>`;
     toast('Error: ' + e.message, 'error');
   }
+}
+
+// ── Upload Gambar Soal ────────────────────────────────────
+async function handleQuestionImageUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('Gambar maks 5MB', 'error'); input.value = ''; return; }
+  const statusEl = document.getElementById('qImageUploadStatus');
+  statusEl.innerHTML = '<p style="font-size:11px;color:#6B7280;padding:4px 0">⏳ Mengupload gambar...</p>';
+  try {
+    const ext      = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const mime     = file.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
+    const filename = `q_${Date.now()}.${ext}`;
+    const resp = await fetch(`${SUPABASE_URL}/storage/v1/object/soal-images/questions/${filename}`, {
+      method : 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': mime, 'x-upsert': 'true' },
+      body   : file,
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/soal-images/questions/${filename}`;
+    document.getElementById('qImage').value            = publicUrl;
+    document.getElementById('qImagePreviewImg').src    = publicUrl;
+    document.getElementById('qImagePreview').classList.remove('hidden');
+    document.getElementById('qImageUploadArea').classList.add('hidden');
+    statusEl.innerHTML = '<p style="font-size:11px;color:#10B981;padding:4px 0">✅ Gambar berhasil diupload!</p>';
+    toast('Gambar diupload!', 'success');
+  } catch(e) {
+    statusEl.innerHTML = `<p style="font-size:11px;color:#EF4444;padding:4px 0">❌ Gagal: ${e.message}</p>`;
+    toast('Upload gagal: ' + e.message, 'error');
+    input.value = '';
+  }
+}
+
+function removeQuestionImage() {
+  document.getElementById('qImage').value                         = '';
+  document.getElementById('qImagePreviewImg').src                = '';
+  document.getElementById('qImagePreview').classList.add('hidden');
+  document.getElementById('qImageUploadArea').classList.remove('hidden');
+  document.getElementById('qImageUploadStatus').innerHTML        = '';
+  document.getElementById('qImageFile').value                    = '';
+}
+
+function resetQuestionImageUI() {
+  removeQuestionImage();
 }
 
 // ── Admin modals ─────────────────────────────────────────
@@ -1866,6 +1929,7 @@ function openQuestionModal(tryoutId) {
   document.getElementById('qTryoutId').value    = tryoutId;
   ['qText','qImage','qOptA','qOptB','qOptC','qOptD','qOptE','qExplanation'].forEach(id => document.getElementById(id).value = '');
   setAnswerKeyBtns('');
+  resetQuestionImageUI();
   openModal('modalQuestion');
 }
 
@@ -1882,6 +1946,16 @@ function editQuestion(q) {
   document.getElementById('qOptE').value        = q.option_e || '';
   document.getElementById('qExplanation').value = q.explanation || '';
   setAnswerKeyBtns(q.answer_key);
+  // Tampilkan preview gambar jika ada
+  if (q.question_image) {
+    document.getElementById('qImage').value = q.question_image;
+    document.getElementById('qImagePreviewImg').src = q.question_image;
+    document.getElementById('qImagePreview').classList.remove('hidden');
+    document.getElementById('qImageUploadArea').classList.add('hidden');
+    document.getElementById('qImageUploadStatus').innerHTML = '';
+  } else {
+    resetQuestionImageUI();
+  }
   openModal('modalQuestion');
 }
 
@@ -1912,6 +1986,26 @@ async function saveQuestion(e) {
     closeModal('modalQuestion');
     filterQuestions(question.tryout_id);
   }
+}
+
+async function deleteAllQuestions() {
+  const tryoutId = document.getElementById('qFilterTryout')?.value;
+  if (!tryoutId) { toast('Pilih Tryout dulu', 'error'); return; }
+  const qs = window._lastQuestions || [];
+  if (!qs.length) { toast('Tidak ada soal untuk dihapus', 'error'); return; }
+  confirmDelete(
+    `Hapus Semua ${qs.length} Soal?`,
+    'Semua soal pada tryout ini akan dihapus permanen dan tidak bisa dikembalikan.',
+    async () => {
+      let done = 0, fail = 0;
+      for (const q of qs) {
+        const r = await rpc('admin_delete_question', { p_admin_id: currentUser.id, p_question_id: q.id });
+        if (r?.success) done++; else fail++;
+      }
+      toast(fail ? `${done} dihapus, ${fail} gagal` : `✓ Semua ${done} soal dihapus!`, fail ? 'error' : 'info');
+      filterQuestions(tryoutId);
+    }
+  );
 }
 
 async function deleteQuestion(questionId) {
