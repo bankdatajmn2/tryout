@@ -1618,6 +1618,7 @@ async function filterQuestions(tryoutId) {
   if (!res || !res.success) { con.innerHTML = '<p class="text-red-500 text-xs">' + (res?.message||'Error') + '</p>'; return; }
   const qs = res.data || [];
   window._lastQuestions = qs; // simpan untuk Hapus Semua
+  window._qMap = {}; qs.forEach(q => window._qMap[q.id] = q); // fix edit btn apostrophe bug
   if (!qs.length) { con.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">Belum ada soal.</div>'; return; }
   con.innerHTML = `<div class="space-y-2">
     ${qs.map((q, i) => `
@@ -1625,7 +1626,7 @@ async function filterQuestions(tryoutId) {
         <div class="flex items-start justify-between gap-2">
           <p class="text-xs text-gray-800 flex-1 line-clamp-2">${i+1}. ${q.question_text}</p>
           <div class="flex gap-1.5 shrink-0">
-            <button onclick='editQuestion(${JSON.stringify(q)})' class="bg-blue-50 text-blue-600 border border-blue-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold">✏️ Edit</button>
+            <button onclick="editQuestion(window._qMap['${q.id}'])" class="bg-blue-50 text-blue-600 border border-blue-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold">✏️ Edit</button>
             <button onclick="deleteQuestion('${q.id}')" class="bg-red-50 text-red-500 border border-red-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold">🗑️ Hapus</button>
           </div>
         </div>
