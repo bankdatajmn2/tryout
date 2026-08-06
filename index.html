@@ -1267,6 +1267,7 @@ function showReview() {
         <span class="text-xs text-gray-400">Soal ${i+1}</span>
       </div>
       <p class="text-sm text-gray-800 font-medium mb-2">${d.question_text}</p>
+      ${d.question_image ? `<img src="${d.question_image}" style="max-width:100%;border-radius:10px;margin-bottom:8px;border:1px solid #E5E7EB;">` : ''}
       <div class="space-y-1 text-xs">
         ${['A','B','C','D','E'].map(l => {
           const txt = d['option_' + l.toLowerCase()];
@@ -1285,7 +1286,10 @@ function showReview() {
           </div>`;
         }).join('')}
       </div>
-      ${d.explanation ? `<div class="mt-2 bg-blue-50 text-blue-700 text-xs rounded-lg px-3 py-2"><b>Pembahasan:</b> ${d.explanation}</div>` : ''}`;
+      ${d.explanation || d.explanation_image ? `<div class="mt-2 bg-blue-50 text-blue-700 text-xs rounded-lg px-3 py-2">
+        ${d.explanation ? `<b>Pembahasan:</b> ${d.explanation}` : ''}
+        ${d.explanation_image ? `<img src="${d.explanation_image}" style="max-width:100%;border-radius:8px;margin-top:6px;border:1px solid #BFDBFE;">` : ''}
+      </div>` : ''}`;
     list.appendChild(card);
   });
   showView('viewReview');
